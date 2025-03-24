@@ -1,19 +1,111 @@
 "use client";
+import { useProfile } from "@/services/getProfile.service";
 import { useMyBlogs } from "@/services/myBlogs.service";
 import {
+  Box,
+  Button,
   Card,
   CardContent,
   CardMedia,
   Container,
   Grid,
+  Modal,
+  TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 
 const MyBlogsComponent = () => {
   const { data } = useMyBlogs();
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
+    setTitle("");
+    setImage(null);
+    setPreview(null);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!title || !image) {
+      alert("Vui lòng nhập tiêu đề và chọn ảnh!");
+      return;
+    }
+    console.log({ title, image });
+
+    handleClose();
+  };
   return (
     <Container maxWidth="md">
+      <Button variant="contained" color="primary" onClick={handleOpen}>
+        Tạo Blog
+      </Button>
+      <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            width: 400,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            color: "text.primary",
+          }}
+        >
+          <Typography variant="h6">Tạo Blog Mới</Typography>
+          <TextField
+            label="Tiêu đề"
+            fullWidth
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <input type="file" accept="image/*" onChange={handleFileChange} />
+
+          {preview && (
+            <Box
+              component="img"
+              src={preview}
+              alt="Preview"
+              sx={{
+                width: "100%",
+                maxHeight: 200,
+                objectFit: "cover",
+                mt: 2,
+                borderRadius: 1,
+              }}
+            />
+          )}
+
+          <Box display="flex" justifyContent="flex-end" gap={2}>
+            <Button variant="outlined" onClick={handleClose}>
+              Hủy
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
+              Lưu
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
       <Typography color="primary" variant="h4" gutterBottom>
         Danh sách Blog
       </Typography>
@@ -34,6 +126,9 @@ const MyBlogsComponent = () => {
             </Card>
           </Grid>
         ))}
+        {data?.data?.length === 0 && (
+          <Typography variant="h6">Bạn chưa có Blog nào</Typography>
+        )}
       </Grid>
     </Container>
   );

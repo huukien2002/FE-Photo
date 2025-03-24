@@ -25,7 +25,6 @@ export default function LoginPage() {
     handleSubmit,
     control,
     formState: { errors },
-    setError,
   } = useForm<LoginForm>();
 
   const onSubmit = (data: LoginForm) => {
