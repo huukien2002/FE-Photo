@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.BACKEND_URL,
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "multipart/form-data",
@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(async (config) => {
   // Lấy CSRF token từ Laravel
   const csrfResponse = await axios.get(
-    `${process.env.BACKEND_URL}/csrf-token`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/csrf-token`,
     {
       withCredentials: true,
     }

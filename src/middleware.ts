@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
     try {
       // Gửi request đến API Laravel để lấy thông tin user từ token
       const response = await fetch(
-        `${process.env.BACKEND_URL}/api/users/profile`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
       if (user.role !== "admin") {
         return NextResponse.redirect(new URL("/", request.url));
       }
-    } catch (error) {
+    } catch {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }

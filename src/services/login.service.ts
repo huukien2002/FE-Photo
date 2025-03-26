@@ -3,14 +3,14 @@ import { useMutation } from "@tanstack/react-query";
 
 const API_URL = "api/login";
 
-// Hàm gọi API đăng ký
+// Hàm gọi API đăng nhập
 const loginUser = async (formData: FormData) => {
   const { data } = await axiosInstance.post(API_URL, formData);
   return data;
 };
 
-// Hook đăng ký người dùng
-export const userLoginUser = () => {
+// Custom Hook đăng nhập người dùng
+export const useUserLogin = () => {
   return useMutation({
     mutationFn: ({ formData }: { formData: FormData }) => loginUser(formData),
   });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm, Controller } from "react-hook-form";
-import { userLoginUser } from "@/services/login.service";
+import { useUserLogin } from "@/services/login.service";
 
 import {
   TextField,
@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 interface LoginForm {
   username: string;
@@ -23,7 +24,7 @@ interface LoginForm {
 export default function LoginPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { mutate, isPending } = userLoginUser();
+  const { mutate, isPending } = useUserLogin();
 
   const {
     handleSubmit,
@@ -49,14 +50,13 @@ export default function LoginPage() {
           queryClient.setQueryData(["my-profile"], response.data.user);
           router.push("/");
         },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message);
+        onError: (error) => {
+          const axiosError = error as AxiosError<{ message: string }>;
+          toast.error(axiosError.response?.data?.message || "Đã xảy ra lỗi!");
         },
       }
     );
   };
-
-  console.log(process.env.BACKEND_URL);
 
   return (
     <Box

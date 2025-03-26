@@ -1,6 +1,5 @@
 "use client";
 import { useCreateBlog } from "@/services/createBlog.service";
-import { useProfile } from "@/services/getProfile.service";
 import { useMyBlogs } from "@/services/myBlogs.service";
 import {
   Box,
@@ -19,6 +18,16 @@ import { toast } from "react-toastify";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useDeleteBlog } from "@/services/deleteBlog.service";
 import { confirmAlert } from "react-confirm-alert";
+import { AxiosError } from "axios";
+
+interface Blog {
+  id: number;
+  title: string;
+  image: string;
+  user: {
+    username: string;
+  };
+}
 const MyBlogsComponent = () => {
   const { data, refetch: refetchBlog } = useMyBlogs();
   const { mutate } = useCreateBlog();
@@ -63,8 +72,9 @@ const MyBlogsComponent = () => {
           toast.success(response.message);
           refetchBlog();
         },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message);
+        onError: (error) => {
+          const axiosError = error as AxiosError<{ message: string }>;
+          toast.error(axiosError.response?.data?.message || "Đã xảy ra lỗi!");
         },
       }
     );
@@ -85,8 +95,11 @@ const MyBlogsComponent = () => {
                 toast.success(response.message);
                 refetchBlog();
               },
-              onError: (error: any) => {
-                toast.error(error?.response?.data?.message);
+              onError: (error) => {
+                const axiosError = error as AxiosError<{ message: string }>;
+                toast.error(
+                  axiosError.response?.data?.message || "Đã xảy ra lỗi!"
+                );
               },
             });
           },
@@ -97,7 +110,7 @@ const MyBlogsComponent = () => {
       ],
     });
   };
-  
+
   return (
     <Container maxWidth="md">
       <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
@@ -159,7 +172,7 @@ const MyBlogsComponent = () => {
         Danh sách Blog
       </Typography>
       <Grid container spacing={3}>
-        {data?.data?.map((blog: any) => (
+        {data?.data?.map((blog: Blog) => (
           <Grid item xs={12} sm={6} md={4} key={blog.id}>
             <Card>
               <CardMedia

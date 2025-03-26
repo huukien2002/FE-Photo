@@ -10,6 +10,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 interface RegisterForm {
   username: string;
@@ -39,9 +40,12 @@ export default function RegisterPage() {
           toast.success(response.message);
           //   alert("Đăng ký thành công!");
         },
-        onError: (error: any) => {
-          if (error.response?.data?.errors) {
-            const serverErrors = error.response.data.errors;
+        onError: (error) => {
+          const axiosError = error as AxiosError<{
+            errors: Record<string, string>;
+          }>;
+          if (axiosError.response?.data?.errors) {
+            const serverErrors = axiosError.response.data.errors;
             Object.keys(serverErrors).forEach((field) => {
               setError(field as keyof RegisterForm, {
                 type: "server",

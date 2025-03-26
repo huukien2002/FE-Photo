@@ -10,7 +10,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import React from "react";
 import { Delete as DeleteIcon } from "@mui/icons-material";
@@ -19,7 +18,16 @@ import { toast } from "react-toastify";
 import { useGetAllBlogs } from "@/services/getDataBlog.service";
 import { confirmAlert } from "react-confirm-alert";
 import { useDeleteBlog } from "@/services/deleteBlog.service";
+import { AxiosError } from "axios";
 
+interface Blog {
+  id: number;
+  title: string;
+  image: string;
+  user: {
+    username: string;
+  };
+}
 const AdminPage = () => {
   const { data: dataUsers, refetch: refetchUser } = useGetAllUsers();
   const { data: dataBlogs, refetch: refetchBlogs } = useGetAllBlogs();
@@ -40,8 +48,11 @@ const AdminPage = () => {
                 toast.success(response.message);
                 refetchUser();
               },
-              onError: (error: any) => {
-                toast.error(error?.response?.data?.message);
+              onError: (error) => {
+                const axiosError = error as AxiosError<{ message: string }>;
+                toast.error(
+                  axiosError.response?.data?.message || "Đã xảy ra lỗi!"
+                );
               },
             });
           },
@@ -66,8 +77,11 @@ const AdminPage = () => {
                 toast.success(response.message);
                 refetchBlogs();
               },
-              onError: (error: any) => {
-                toast.error(error?.response?.data?.message);
+              onError: (error) => {
+                const axiosError = error as AxiosError<{ message: string }>;
+                toast.error(
+                  axiosError.response?.data?.message || "Đã xảy ra lỗi!"
+                );
               },
             });
           },
@@ -124,7 +138,7 @@ const AdminPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {dataBlogs?.data?.map((blog: any) => (
+              {dataBlogs?.data?.map((blog: Blog) => (
                 <TableRow key={blog.id}>
                   <TableCell>{blog.title}</TableCell>
                   <TableCell>
@@ -139,7 +153,7 @@ const AdminPage = () => {
                   <TableCell>{blog.user.username}</TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() => handleDeleteBlog(parseInt(blog.id))}
+                      onClick={() => handleDeleteBlog(Number(blog.id))}
                       color="error"
                     >
                       <DeleteIcon />
