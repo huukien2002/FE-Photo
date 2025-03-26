@@ -17,26 +17,68 @@ import { Delete as DeleteIcon } from "@mui/icons-material";
 import { useDeleteUser } from "@/services/deleteUser.service";
 import { toast } from "react-toastify";
 import { useGetAllBlogs } from "@/services/getDataBlog.service";
+import { confirmAlert } from "react-confirm-alert";
+import { useDeleteBlog } from "@/services/deleteBlog.service";
 
 const AdminPage = () => {
   const { data: dataUsers, refetch: refetchUser } = useGetAllUsers();
   const { data: dataBlogs, refetch: refetchBlogs } = useGetAllBlogs();
 
   const { mutate: mutateDeleteUser } = useDeleteUser();
+  const { mutate: mutateDeleteBlog } = useDeleteBlog();
 
-  const handleDelete = (id: number) => {
-    mutateDeleteUser(id, {
-      onSuccess: (response) => {
-        toast.success(response.message);
-        refetchUser();
-      },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message);
-      },
+  const handleDeleteUser = (id: number) => {
+    confirmAlert({
+      title: "Xác nhận xóa",
+      message: "Bạn có chắc chắn muốn xóa người dùng này?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: () => {
+            mutateDeleteUser(id, {
+              onSuccess: (response) => {
+                toast.success(response.message);
+                refetchUser();
+              },
+              onError: (error: any) => {
+                toast.error(error?.response?.data?.message);
+              },
+            });
+          },
+        },
+        {
+          label: "Hủy",
+        },
+      ],
     });
   };
 
-  console.log(dataBlogs);
+  const handleDeleteBlog = (id: number) => {
+    confirmAlert({
+      title: "Xác nhận xóa",
+      message: "Bạn có chắc chắn muốn xóa bài viết này?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: () => {
+            mutateDeleteBlog(id, {
+              onSuccess: (response) => {
+                toast.success(response.message);
+                refetchBlogs();
+              },
+              onError: (error: any) => {
+                toast.error(error?.response?.data?.message);
+              },
+            });
+          },
+        },
+        {
+          label: "Hủy",
+        },
+      ],
+    });
+  };
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <Box sx={{ padding: "20px" }}>
@@ -44,9 +86,9 @@ const AdminPage = () => {
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead style={{ backgroundColor: "#f5f5f5" }}>
               <TableRow>
-                <TableCell>Username</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Username</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -57,7 +99,7 @@ const AdminPage = () => {
                     <TableCell>{user.role}</TableCell>
                     <TableCell>
                       <IconButton
-                        onClick={() => handleDelete(parseInt(user.id))}
+                        onClick={() => handleDeleteUser(parseInt(user.id))}
                         color="error"
                       >
                         <DeleteIcon />
@@ -73,23 +115,31 @@ const AdminPage = () => {
       <Box sx={{ padding: "20px" }}>
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead style={{ backgroundColor: "#f5f5f5" }}>
+            <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
               <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>Author</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Author</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {dataBlogs?.data?.map((blog: any) => (
                 <TableRow key={blog.id}>
                   <TableCell>{blog.title}</TableCell>
-                  <TableCell>{blog.image}</TableCell>
+                  <TableCell>
+                    <img
+                      src={blog.image}
+                      width={100}
+                      height={100}
+                      srcSet=""
+                      alt=""
+                    />
+                  </TableCell>
                   <TableCell>{blog.user.username}</TableCell>
                   <TableCell>
                     <IconButton
-                      // onClick={() => handleDelete(parseInt(user.id))}
+                      onClick={() => handleDeleteBlog(parseInt(blog.id))}
                       color="error"
                     >
                       <DeleteIcon />

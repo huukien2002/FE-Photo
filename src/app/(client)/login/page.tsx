@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LoginForm {
   username: string;
@@ -19,6 +21,8 @@ interface LoginForm {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutate, isPending } = userLoginUser();
 
   const {
@@ -31,7 +35,6 @@ export default function LoginPage() {
     const formData = new FormData();
     formData.append("username", data.username);
     formData.append("password", data.password);
-    formData.append("role", "user");
 
     mutate(
       { formData },
@@ -42,6 +45,9 @@ export default function LoginPage() {
             Cookies.set("accessToken", token, { expires: 7 });
           }
           toast.success(response.message);
+          // Cập nhật dataProfile ngay lập tức
+          queryClient.setQueryData(["my-profile"], response.data.user);
+          router.push("/");
         },
         onError: (error: any) => {
           toast.error(error?.response?.data?.message);
@@ -49,6 +55,8 @@ export default function LoginPage() {
       }
     );
   };
+
+  console.log(process.env.BACKEND_URL);
 
   return (
     <Box

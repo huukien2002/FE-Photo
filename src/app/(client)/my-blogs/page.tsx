@@ -1,4 +1,5 @@
 "use client";
+import { useCreateBlog } from "@/services/createBlog.service";
 import { useProfile } from "@/services/getProfile.service";
 import { useMyBlogs } from "@/services/myBlogs.service";
 import {
@@ -14,15 +15,20 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-
+import { toast } from "react-toastify";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { useDeleteBlog } from "@/services/deleteBlog.service";
+import { confirmAlert } from "react-confirm-alert";
 const MyBlogsComponent = () => {
-  const { data } = useMyBlogs();
+  const { data, refetch: refetchBlog } = useMyBlogs();
+  const { mutate } = useCreateBlog();
+  const { mutate: mutateDelete } = useDeleteBlog();
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setTitle("");
@@ -45,13 +51,56 @@ const MyBlogsComponent = () => {
       alert("Vui lòng nhập tiêu đề và chọn ảnh!");
       return;
     }
-    console.log({ title, image });
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("image", image);
+
+    mutate(
+      { formData },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message);
+          refetchBlog();
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message);
+        },
+      }
+    );
 
     handleClose();
   };
+
+  const handleDeleteBlog = (id: number) => {
+    confirmAlert({
+      title: "Xác nhận xóa",
+      message: "Bạn có chắc chắn muốn xóa bài viết này?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: () => {
+            mutateDelete(id, {
+              onSuccess: (response) => {
+                toast.success(response.message);
+                refetchBlog();
+              },
+              onError: (error: any) => {
+                toast.error(error?.response?.data?.message);
+              },
+            });
+          },
+        },
+        {
+          label: "Hủy",
+        },
+      ],
+    });
+  };
+  
   return (
     <Container maxWidth="md">
-      <Button variant="contained" color="primary" onClick={handleOpen}>
+      <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
         Tạo Blog
       </Button>
       <Modal open={open} onClose={handleClose}>
@@ -116,12 +165,18 @@ const MyBlogsComponent = () => {
               <CardMedia
                 component="img"
                 height="200"
-                // image={blog.image || "/placeholder.jpg"}
-                image="https://tse4.mm.bing.net/th?id=OIP.NN1uAgTw1BZgX-hXgKx06wHaEN&pid=Api&P=0&h=180"
+                image={blog.image}
                 alt={blog.title}
               />
-              <CardContent>
+              <CardContent
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
                 <Typography variant="h6">{blog.title}</Typography>
+                <DeleteForeverIcon
+                  onClick={() => handleDeleteBlog(blog.id)}
+                  color="error"
+                  sx={{ cursor: "pointer" }}
+                />
               </CardContent>
             </Card>
           </Grid>

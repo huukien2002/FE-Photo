@@ -6,6 +6,8 @@ import Footer from "../../components/layout/footer";
 import ReactQueryProvider from "./providers";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "react-confirm-alert/src/react-confirm-alert.css";
+
 import { Box } from "@mui/material";
 const geistSans = Geist({
   variable: "--font-geist-sans",

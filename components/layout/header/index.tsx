@@ -13,23 +13,44 @@ import { useProfile } from "@/services/getProfile.service";
 import { useLogoutUser } from "@/services/logout.service";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
-import { useRouter } from "next/router";
 import { Tooltip } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { confirmAlert } from "react-confirm-alert";
+import { useQueryClient } from "@tanstack/react-query";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 export const Header = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   const { data: dataProfile } = useProfile();
   const { mutate } = useLogoutUser();
 
   const handleLogout = () => {
-    mutate(undefined, {
-      onSuccess: (response) => {
-        Cookies.remove("accessToken");
-        toast.success(response.message);
-        window.location.href = "/";
-      },
-      onError: (error) => {
-        console.error("Lỗi khi đăng xuất:", error);
-      },
+    confirmAlert({
+      title: "Xác nhận đăng xuất",
+      message: "Bạn có chắc muốn đăng xuất không?",
+      buttons: [
+        {
+          label: "Có",
+          onClick: () => {
+            mutate(undefined, {
+              onSuccess: (response) => {
+                Cookies.remove("accessToken");
+                toast.success(response.message);
+                queryClient.setQueryData(["my-profile"], null);
+                router.push("/");
+              },
+              onError: (error) => {
+                console.error("Lỗi khi đăng xuất:", error);
+              },
+            });
+          },
+        },
+        {
+          label: "Huỷ",
+        },
+      ],
     });
   };
 
@@ -56,6 +77,11 @@ export const Header = () => {
           <Button color="inherit" component={Link} href="/my-blogs">
             My Blogs
           </Button>
+          {dataProfile?.role === "admin" && (
+            <Button color="inherit" component={Link} href="/admin">
+              <SettingsIcon />
+            </Button>
+          )}
 
           {dataProfile ? (
             <>
